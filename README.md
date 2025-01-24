@@ -1,1 +1,2 @@
-# zomato-sql_project
+# Zomato Orders Data Analysis using SQL
+![Zomato logo]
