@@ -6,8 +6,7 @@
 
 ## Project Structure
 
-### 
-• Database Setup: Creation of the zomato_d database and the required tables.
-• Data Import: Inserting sample data into the tables.
-• Data Cleaning: Handling null values and ensuring data integrity.
-• Business Problems: Solving 20 specific business problems using SQL queries.
+### • Database Setup: Creation of the zomato_d database and the required tables.
+### • Data Import: Inserting sample data into the tables.
+### • Data Cleaning: Handling null values and ensuring data integrity.
+### • Business Problems: Solving 20 specific business problems using SQL queries.
