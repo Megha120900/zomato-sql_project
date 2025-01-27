@@ -9,4 +9,23 @@
 #### • Database Setup: Creation of the zomato_d database and the required tables.
 #### • Data Import: Inserting sample data into the tables.
 #### • Data Cleaning: Handling null values and ensuring data integrity.
-#### • Business Problems: Solving 20 specific business problems using SQL queries.
+#### • Business Problems: Solving 16 specific business problems using SQL queries.
+
+
+## Schema
+
+```sql
+CREATE TABLE customers
+customer _id INT PRIMARY KEY,
+customer_name VARCHAR (25),
+reg_date DATE
+) ;
+
+CREATE TABLE restaurants
+restaurant_id INT PRIMARY KEY,
+restaurant_name VARCHAR (55),
+city VARCHAR (15),
+opening-hours VARCHAR (55)
+
+
+```
