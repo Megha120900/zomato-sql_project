@@ -103,7 +103,7 @@ order by count(*) desc;
 
 ```
 
-### 3. Identifying average order value of customers who have placed more than 10 orders
+### 3. Average order value of customers who have placed more than 10 orders
 
 
 ```sql
@@ -119,11 +119,84 @@ order by 3 desc
 
 ```
 
+### 4. List of users who have spent more than 10,000 Rs on orders in past 1 year
 
+```sql
 
+select customer_id,sum(total_amount) as total_spent from orders
+where order_date >= current_date-interval '1 Year'
+group by customer_id
+having sum(total_amount)>10000
+order by 2 desc;
 
+```
 
+### 5. Orders that were placed but not delivered
+Returning restaurant_name, restaurant_id
 
+```sql
 
+Select r.restaurant_name,r.city,r.restaurant_id, count(*) as failed_delivery from orders o
+join restaurants r 
+on
+o.restaurant_id=r.restaurant_id
+join deliveries d
+on 
+o.order_id=d.order_id
+where d.delivery_status='Failed'
+group by r.restaurant_id
+order by failed_delivery desc;
+
+```
+
+### 6. Ranking restaurants based on revenue earned till date within each city and overall
+
+```sql
+
+Select r.restaurant_name,r.city,r.restaurant_id,sum(total_amount) as Revenue,
+dense_rank() over(partition by r.city order by sum(total_amount) desc) as withincity_rank,
+dense_rank() over(order by sum(total_amount) desc) as overall_rank
+from orders o
+join restaurants r
+on 
+o.restaurant_id=r.restaurant_id
+group by 2,3
+
+```
+
+### 7. Identifying most popular dish in each city
+
+```sql
+
+Select * from
+(
+Select TRIM(UNNEST(string_to_array(o.order_item,','))) AS dishes,
+r.city,
+count(*) as number_of_orders,
+dense_rank() over(partition by r.city order by count(*) desc) as city_rank
+from orders o
+join restaurants r on
+o.restaurant_id=r.restaurant_id
+GROUP BY 1,2
+) 
+as t1
+where city_rank = 1;
+
+```
+
+### 8. Customer churn - Customers who have not placed orders in past one year
+
+```sql
+
+Select distinct customer_id
+from orders
+where extract(year from order_date)=2024
+and customer_id not in
+	(
+	Select distinct customer_id
+	from orders
+	where extract(year from order_date)=2025);
+
+```
 
 
