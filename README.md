@@ -9,7 +9,7 @@
 #### • Database Setup: Creation of the zomato_d database and the required tables.
 #### • Data Import: Inserting sample data into the tables.
 #### • Data Cleaning: Handling null values and ensuring data integrity.
-#### • Business Problems: Solving 16 specific business problems using SQL queries.
+#### • Business Problems: Solving 15 specific business problems using SQL queries.
 
 
 ## Schema
@@ -64,7 +64,7 @@ constraint fk_riders (rider_id) references riders(rider_id)
 );
 
 ```
-## Business Questions and Analysis
+## Questions and Analysis
 
 ### 1. Finding top ordered dish by a particular customer
 
@@ -198,5 +198,144 @@ and customer_id not in
 	where extract(year from order_date)=2025);
 
 ```
+
+### 9. Monthly restaurant's growth ratio
+
+```sql
+with growth_ratio as
+(
+Select o.restaurant_id,TO_CHAR(o.order_date,'mm-yy') as month,count(o.order_id) as total_orders,
+Lag(count(o.order_id),1) over(partition by o.restaurant_id order by TO_CHAR(o.order_date,'mm-yy'))
+as prev_month
+from orders o
+join  deliveries d on
+o.order_id=d.order_id
+group by 1,2
+order by 1,2
+)
+Select restaurant_id,month,total_orders,prev_month,
+((total_orders-prev_month)/prev_month)/100 as monthly_growth
+from growth_ratio	
+
+```
+
+### 10.Customer segmentation - Segmenting customers based on total spending compared to average order value
+
+```sql
+
+Select customer_id, sum(total_amount) as total_revenue, count(order_id),
+case when sum(total_amount)> (Select avg(total_amount) from orders) then 'Gold'
+Else 'Silver'
+END as Segmentation
+from orders
+group by 1
+order by 2,3
+
+```
+
+### 11.Calculating each rider's monthly earning. Assuming they earn 8% of the total order
+
+```sql
+
+Select rider_id,
+to_char(o.order_date,'mm-yy') as mon,
+sum(total_amount)*0.08 as total_amt
+from deliveries d
+join orders o on
+d.order_id= o.order_id
+group by 1,2
+order by 1,2
+
+```
+
+### 12. Analyzing order frequency per day of the week and identifying peak day for restaurants
+
+```sql
+
+with frequency as
+(
+Select r.restaurant_name,o.restaurant_id, TO_CHAR(o.order_date, 'Day') as weekday,count(o.order_id) as total_order,
+rank() over(partition by o.restaurant_id order by count(o.order_id) desc) AS RANKS
+from orders o join restaurants r on
+o.restaurant_id=r.restaurant_id
+group by 1,2,3
+order by 1,4 desc
+)
+Select restaurant_name,restaurant_id, weekday,total_order 
+from frequency
+where ranks=1;
+
+```
+
+### 13. Calculating customer lifetime value (CLV)
+
+```sql
+
+Select customer_id, sum(total_amount) as CLV
+from orders
+group by 1
+order by 2
+
+```
+
+
+### 14. Monthly sales trend for each restaurant
+
+```sql
+
+With month_ratio as
+(
+Select to_char(order_date,'mm-yy') as month,
+sum(total_amount) as month_total,
+lag(sum(total_amount)) over(ORDER BY TO_CHAR(order_date, 'mm-yy')) as previous_month
+from orders
+group by 1
+order by 1
+)
+Select month, month_total,previous_month,
+((month_total-previous_month)/previous_month)*100 as growth_ratio
+from
+month_ratio
+
+```
+
+### 15. Identifying seasonal demands for each dish
+
+```sql
+
+SELECT 
+order_item, 
+seasons,
+COUNT(order_id) AS total_orders
+FROM 
+(
+SELECT 
+ *,
+EXTRACT(MONTH FROM order_date) AS month,
+CASE
+WHEN EXTRACT(MONTH FROM order_date) BETWEEN 4 AND 6 THEN 'Spring'
+WHEN EXTRACT(MONTH FROM order_date) BETWEEN 7 AND 8 THEN 'Summer'
+WHEN EXTRACT(MONTH FROM order_date) BETWEEN 9 AND 11 THEN 'Autumn'
+ELSE 'Winter'
+END AS seasons
+FROM 
+orders
+) AS t1
+GROUP BY 1, 2
+ORDER BY 1, 3 DESC;
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
